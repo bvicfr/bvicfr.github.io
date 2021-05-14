@@ -2,4 +2,4 @@
 
 [Index](index.html)
 
-[Supreme Cooking Utensil](supreme-cooking-utensil.html)
+[Supreme Enhancing Utensil](supreme-enhancing-utensil.html)
