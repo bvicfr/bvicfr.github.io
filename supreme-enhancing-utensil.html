@@ -35,7 +35,7 @@
 		}
 	</style>
 	<body>
-		<h1 style='text-align: center; margin: 5px'>Supreme Enhancing Utensil <small>v0.3</small></h1>
+		<h1 style='text-align: center; margin: 5px'>Supreme Enhancing Utensil <small>v0.3.1</small></h1>
 		<h3 style='text-align: center; margin: 5px'><small>The enhancement simulator turning random clicking into data science</small></h3>
 		<div>
 			<div style='width: 32%; float: left; margin-right: 20px'>
@@ -235,7 +235,7 @@
 						</select>
 						<input type='text' id='stopConditionTargetStack' value='20'><br/><br/>
 						<button onclick='
-							currentFailstack = 0;
+							currentFailstack = playerSettings["defaultFailstack"];
 							componentsUsed = {};
 							itemsProduced = {};
 							$("#logs").html("");
@@ -332,7 +332,7 @@
 							Component prices <button id="editComponents" onclick='modeEditComponents = true;
 								$("#editComponents").hide();
 								$("#saveComponents").show();
-								updatePrices();
+								updateSettings();
 								updateDisplay();
 							'>Edit</button><button id="saveComponents" style="display:none" onclick='modeEditComponents = false;
 								$("#editComponents").show();
@@ -343,13 +343,14 @@
 					</h3>
 					<table id='componentPrices'>
 					</table>
+					<button onclick='computeConcentratedFromMaterials(); updateSettings(); updateDisplay();'>Compute concentrated stones price from materials</button>
 				</div>
 				<div class='box'>
 					<h3>
 							Item prices <button id="editItems" onclick='modeEditItems = true;
 								$("#editItems").hide();
 								$("#saveItems").show();
-								updatePrices();
+								updateSettings();
 								updateDisplay();
 							'>Edit</button><button id="saveItems" style="display:none" onclick='modeEditItems = false;
 								$("#editItems").show();
@@ -359,6 +360,23 @@
 							'>Save</button>
 					</h3>
 					<table id='itemPrices'>
+					</table>
+				</div>
+				<div class='box'>
+					<h3>
+							Player settings <button id="editPlayerSettings" onclick='modeEditPlayerSettings = true;
+								$("#editPlayerSettings").hide();
+								$("#savePlayerSettings").show();
+								updateSettings();
+								updateDisplay();
+							'>Edit</button><button id="savePlayerSettings" style="display:none" onclick='modeEditPlayerSettings = false;
+								$("#editPlayerSettings").show();
+								$("#savePlayerSettings").hide();
+								savePlayerSettings();
+								updateDisplay();
+							'>Save</button>
+					</h3>
+					<table id='playerSettings'>
 					</table>
 				</div>
 			</div>
@@ -394,7 +412,7 @@
 						return;
 					}
 				
-					currentFailstack = 0;
+					currentFailstack = playerSettings['defaultFailstack'];
 					func.apply(null, params);
 					
 					if(displayOnOff) $("#logs").prepend("<p>>>>Repetition "+i+" / "+numberOfRepetitions+" done</p>");
@@ -412,6 +430,7 @@
 			let typeOfDisplay = 'average';
 			let modeEditComponents = false;
 			let modeEditItems = false;
+			let modeEditPlayerSettings = false;
 			let failstackIncreases = [1,1,1,1,1,  1,1,1,1,1,  1,1,1,1,1,  1,3,4,5,6, 0];
 			let autoPurifyReblath15 = true;
 			
@@ -538,8 +557,13 @@
 				
 				'purify': 100000
 			}
-			componentPrices['concentratedWeaponStone'] = componentPrices['sharpFragment'] + componentPrices['weaponStone']*2;
-			componentPrices['concentratedArmorStone'] = componentPrices['hardFragment'] + componentPrices['armorStone']*2;
+			
+			function computeConcentratedFromMaterials () {
+				componentPrices['concentratedWeaponStone'] = componentPrices['sharpFragment'] + componentPrices['weaponStone']*2;
+				componentPrices['concentratedArmorStone'] = componentPrices['hardFragment'] + componentPrices['armorStone']*2;
+				console.log(componentPrices['concentratedArmorStone'])
+			}
+			computeConcentratedFromMaterials();
 			
 			itemPrices = {
 				'[Green Weapon (PRI)]': 38800000,
@@ -574,7 +598,12 @@
 				'[Blackstar Armor (PEN)]': 48800000000
 			}
 			
-			let currentFailstack = 0;
+			let playerSettings = {
+				'defaultFailstack': 1
+			};
+			
+			
+			let currentFailstack = playerSettings['defaultFailstack'];
 			
 			/*let componentsUsed = {
 				'weaponStone': 0,
@@ -663,7 +692,7 @@
 						let logTxt = `Enhance ${this.toString()} +${currentFailstack} ${proba}% SUCCESS`;
 						if(displayOnOff) $('#logs').prepend('<p style="color: green">'+logTxt+'</p>');
 						
-						currentFailstack = 0;
+						currentFailstack = playerSettings['defaultFailstack'];
 						
 						objAdd(componentsUsed, componentType, this.item['componentCount'][this.rank]);
 						//objAdd(itemsProduced, this.toString(), -1);
@@ -763,7 +792,7 @@
 			
 			
 			function getComponentPrice(key) {
-				return (componentPrices[key] != undefined) ? componentPrices[key] : 777777;
+				return (componentPrices[key] != undefined) ? componentPrices[key] : 0;
 			}
 			function getItemPrice(key) {
 				return (itemPrices[key] != undefined) ? itemPrices[key] : 0;
@@ -830,17 +859,24 @@
 			
 			function saveComponentPrices() {
 				for (let [key, value] of Object.entries(componentPrices)) {
-					componentPrices[key] = $('#'+key+'ComponentPriceInput').val();
+					componentPrices[key] = Number($('#'+key+'ComponentPriceInput').val());
 				}
-				updatePrices();
+				updateSettings();
 			}
 			
 			// Replace is used so Ids only contain a-zA-Z0-9 ... there was probably a simpler method
 			function saveItemPrices() {
 				for (let [key, value] of Object.entries(itemPrices)) {
-					itemPrices[key] = $('#'+(key.replace("[", "aaa").replace("]", "bbb").replace("(", "ccc").replace(")", "ddd").replace(/ /g, "eee"))+'ItemPriceInput').val();
+					itemPrices[key] = Number($('#'+(key.replace("[", "aaa").replace("]", "bbb").replace("(", "ccc").replace(")", "ddd").replace(/ /g, "eee"))+'ItemPriceInput').val());
 				}
-				updatePrices();
+				updateSettings();
+			}
+			
+			function savePlayerSettings() {
+				for (let [key, value] of Object.entries(playerSettings)) {
+					playerSettings[key] = Number($('#'+key+'PlayerSettingsInput').val());
+				}
+				updateSettings();
 			}
 			
 			function displayCompactNumber(myNumber) {
@@ -851,7 +887,7 @@
 				if(myNumber > 1e3) return sign + String((myNumber/1e3).toFixed(2))+' k silver';
 				return sign + String(myNumber.toFixed(3))+' silver';
 			}
-			function updatePrices() {
+			function updateSettings() {
 				if(modeEditComponents) {
 					$('#componentPrices').html('');
 					for (let [key, value] of Object.entries(componentPrices)) {
@@ -875,9 +911,21 @@
 						$('#itemPrices').append('<tr><td>'+key+'</td><td>'+displayCompactNumber(value)+'</td></tr>');
 					}
 				}
+				
+				if(modeEditPlayerSettings) {
+					$('#playerSettings').html('');
+					for (let [key, value] of Object.entries(playerSettings)) {
+						$('#playerSettings').append('<tr><td>'+key+'</td><td><input type="text" value="'+value+'" id="'+key+'PlayerSettingsInput"></td></tr>');
+					}
+				} else {
+					$('#playerSettings').html('');
+					for (let [key, value] of Object.entries(playerSettings)) {
+						$('#playerSettings').append('<tr><td>'+key+'</td><td>'+value+'</td></tr>');
+					}
+				}
 			}
 			
-			updatePrices();
+			updateSettings();
 			
 			function toggleDisplayOnOff() {
 				displayOnOff = !displayOnOff;
@@ -967,7 +1015,11 @@
 				//global: currentFailstack
 				
 				if(displayOnOff) $('#logs').prepend('<p>>>>Custom strategy: stopCondition='+JSON.stringify(stopCondition)+' steps='+JSON.stringify(arrayOfSteps)+'</p>');
-				console.log('<p>>>>Run strategy: stopCondition='+JSON.stringify(stopCondition)+' steps='+JSON.stringify(arrayOfSteps)+'</p>');
+				
+				if(arrayOfSteps.length == 0) {
+					if(displayOnOff) $('#logs').prepend('<p style="color: red"><b>No step in the strategy. Run terminated without reaching the stop condition</b></p>');
+					return;
+				}
 				
 				myItem = new Item(arrayOfSteps[0].name, Item.rankTo20(arrayOfSteps[0].rank));
 				while(true) {
@@ -983,11 +1035,13 @@
 					}
 					
 					// Get through in decreasing order
+					let somethingHappened = false;
 					for(let i = arrayOfSteps.length-1; i>=0; i--) {
 						let step = arrayOfSteps[i];
 						if(autoPurifyReblath15 && myItem.name == 'Reblath' && myItem.rank == 15) myItem.purify();
 						
 						if(currentFailstack >= step.startStep) {
+							somethingHappened = true;
 							if(myItem.name != step.name || myItem.rank != Item.rankTo20(step.rank)) {
 								myItem.sell();
 								myItem = new Item(step.name, Item.rankTo20(step.rank));
@@ -995,6 +1049,10 @@
 							myItem.enhance();
 							break;
 						}
+					}
+					if(!somethingHappened) {
+						if(displayOnOff) $('#logs').prepend('<p style="color: red"><b>Conditions met for none of the steps. Run terminated without reaching the stop condition</b></p>');
+						return;
 					}
 				}
 				
@@ -1030,6 +1088,11 @@
 				- Handle accessories<br/>
 				- Compute the time spent clicking/going to the church/buying from the market/loading from the warehouse.<br/>
 				- Enter the data for less common items like manos and ship equipment.<br/>
+				
+				<br/>v0.3.1:<br/>
+				- Handle the default failstack from the adventure log<br/>
+				- No infinite loop when no step is valid.<br/>
+				- Button compute the price of concentrated black stones from materials.<br/>
 				
 				<br/>v0.3:<br/>
 				- Add Yellow/blackstar<br/>
