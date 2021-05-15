@@ -35,7 +35,7 @@
 		}
 	</style>
 	<body>
-		<h1 style='text-align: center; margin: 5px'>Supreme Enhancing Utensil <small>v0.2</small></h1>
+		<h1 style='text-align: center; margin: 5px'>Supreme Enhancing Utensil <small>v0.3</small></h1>
 		<h3 style='text-align: center; margin: 5px'><small>The enhancement simulator turning random clicking into data science</small></h3>
 		<div>
 			<div style='width: 32%; float: left; margin-right: 20px'>
@@ -47,7 +47,12 @@
 						<select id="newItem">
 							<option value="Militia">Militia</option>
 							<option value="Reblath">Reblath</option>
+							<option value="Green Weapon">Green Weapon</option>
 							<option value="Green Armor">Green Armor</option>
+							<option value="Yellow Weapon">Yellow Weapon</option>
+							<option value="Yellow Armor">Yellow Armor</option>
+							<option value="Blackstar Weapon">Blackstar Weapon</option>
+							<option value="Blackstar Armor">Blackstar Armor</option>
 							<option value="Tuvala Weapon">Tuvala Weapon</option>
 							<option value="Tuvala Armor">Tuvala Armor</option>
 						</select>
@@ -153,12 +158,16 @@
 									<select>
 										<option value="Militia">Militia</option>
 										<option value="Reblath" selected>Reblath</option>
+										<option value="Green Weapon">Green Weapon</option>
 										<option value="Green Armor">Green Armor</option>
+										<option value="Yellow Weapon">Yellow Weapon</option>
+										<option value="Yellow Armor">Yellow Armor</option>
+										<option value="Blackstar Weapon">Blackstar Weapon</option>
+										<option value="Blackstar Armor">Blackstar Armor</option>
 										<option value="Tuvala Weapon">Tuvala Weapon</option>
 										<option value="Tuvala Armor">Tuvala Armor</option>
 									</select>
 									<select>
-										<option value="PEN">PEN</option>
 										<option value="TET">TET</option>
 										<option value="TRI">TRI</option>
 										<option value="DUO">DUO</option>
@@ -279,6 +288,18 @@
 							setStopConditionType("reachFailstack");
 							$("#stopConditionTargetStack").val(100);
 						'>Load strategy</button>
+						
+						<p>Make a [Blackstar Weapon (PEN)] ... well, not ingame unfortunately</p>
+						<button onclick='
+							deleteAllStrategies();
+							addStep(0, "Reblath", "14");
+							addStep(20, "Green Armor", "PRI");
+							addStep(30, "Green Armor", "DUO");
+							addStep(50, "Green Armor", "TRI");
+							addStep(100, "Yellow Armor", "TET");
+							addStep(200, "Blackstar Weapon", "TET");
+							setStopConditionType("successOnLastStep");
+						'>Load strategy</button>
 					</div>
 				</div>
 			</div>
@@ -396,46 +417,103 @@
 			
 			let allItems = {
 				'Militia': {
-					'base': [100,100,100,100,100,  100,100,70,24.41,14.29,  10,6.67,4,2.5,2,  11.76,7.69,6.25,2.00,0.30, 0],
+					'base': [100,100,100,100,100,  100,100,70,20.41,14.29,  10,6.67,4,2.5,2,  11.76,7.69,6.25,2.00,0.30, 0],
 					'durabilityLoss': 5.0,
+					'durabilityLoss2': 10.0,
 					'durabilityRegenItem': 'militia',
 					'durabilityRegen': 10.0,
 					'componentType': 'weaponStone',
+					'componentType2': 'concentratedWeaponStone',
 					'componentCount': [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1]
 				},
 				'Reblath': {
 					'base': [100,100,100,100,100,  70,25.64,17.24,11.76,7.69,   6.25,5,4,2.86,2,  11.76,7.69,6.25,2.00,0.30, 0],
 					'durabilityLoss': 5.0,
+					'durabilityLoss2': 10.0,
 					'durabilityRegenItem': 'reblath',
 					'durabilityRegen': 10.0,
 					'componentType': 'armorStone',
+					'componentType2': 'concentratedArmorStone',
 					'componentCount': [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1]
 				},
 				'Tuvala Weapon': {
 					'base': [100,100,100,100,100, 100,100,90,70,50, 30,20,15,10,8, 17,12,8,5,3, 0],
 					'durabilityLoss': 5.0,
+					'durabilityLoss2': 5.0,
 					'durabilityRegenItem': 'tuvalaOre',
 					'durabilityRegen': 10.0,
-					'cron': [30,85,180],
 					'componentType': 'timeFilledStone',
+					'componentType2': 'timeFilledStone',
 					'componentCount': [15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15, 15]
 				},
 				'Tuvala Armor': {
 					'base': [100,100,100,100,100, 90,80,70,60,50, 30,20,15,10,8, 17,12,8,5,3, 0],
 					'durabilityLoss': 5.0,
+					'durabilityLoss2': 5.0,
 					'durabilityRegenItem': 'tuvalaOre',
 					'durabilityRegen': 10.0,
-					'cron': [25,75,165],
 					'componentType': 'timeFilledStone',
+					'componentType2': 'timeFilledStone',
 					'componentCount': [15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15, 15]
 				},
-				'Green Armor': {
-					'base': [100,100,100,100,100,  70,25.64,17.24,11.76,7.69,   6.25,5,4,2.86,2,  11.76,7.69,6.25,2.00,0.30, 0],
-					'durabilityLoss': 10.0,
+				'Green Weapon': { // Quite different, neraly all have x2 probability and 3x for +13 and +14. Same once at +15
+					'base': [100,100,100,100,100,  100,100,70,40.82,28.58,  20,13.34,8,7.5,6,  11.76,7.69,6.25,2.00,0.30, 0],
+					'durabilityLoss': 5.0,
+					'durabilityLoss2': 10.0,
+					'durabilityRegenItem': 'greenWeapon',
+					'durabilityRegen': 10.0,
+					'componentType': 'weaponStone',
+					'componentType2': 'concentratedWeaponStone',
+					'componentCount': [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1]
+				},
+				'Green Armor': { // Difference with White/Blue/Yellow: 51.28 and 3.75
+					'base': [100,100,100,100,100,  70,51.28,17.24,11.76,7.69,   6.25,5,4,3.75,2,  11.76,7.69,6.25,2.00,0.30, 0],
+					'durabilityLoss': 5.0,
+					'durabilityLoss2': 10.0,
 					'durabilityRegenItem': 'greenArmor',
 					'durabilityRegen': 10.0,
-					'cron': [10,31,50],
-					'componentType': 'concentratedArmorStone',
+					'componentType': 'armorStone',
+					'componentType2': 'concentratedArmorStone',
+					'componentCount': [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1]
+				},
+				'Yellow Weapon': { // Copy of white but with mems
+					'base': [100,100,100,100,100,  100,100,70,20.41,14.29,  10,6.67,4,2.5,2,  11.76,7.69,6.25,2.00,0.30, 0],
+					'durabilityLoss': 5.0,
+					'durabilityLoss2': 10.0,
+					'durabilityRegenItem': 'memoryFragment',
+					'durabilityRegen': 1.0,
+					'componentType': 'weaponStone',
+					'componentType2': 'concentratedWeaponStone',
+					'componentCount': [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1]
+				},
+				'Yellow Armor': { // Copy of white but with mems
+					'base': [100,100,100,100,100,  70,25.64,17.24,11.76,7.69,   6.25,5,4,2.86,2,  11.76,7.69,6.25,2.00,0.30, 0],
+					'durabilityLoss': 5.0,
+					'durabilityLoss2': 10.0,
+					'durabilityRegenItem': 'memoryFragment',
+					'durabilityRegen': 1.0,
+					'componentType': 'armorStone',
+					'componentType2': 'concentratedArmorStone',
+					'componentCount': [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1]
+				},
+				'Blackstar Weapon': { // Same below +15, different durability losses, 10 then 20
+					'base': [100,100,100,100,100,  100,100,70,20.41,14.29,  10,6.67,4,2.5,2,  13.08,10.63,3.40,0.51,0.20, 0],
+					'durabilityLoss': 10.0,
+					'durabilityLoss2': 20.0,
+					'durabilityRegenItem': 'memoryFragment',
+					'durabilityRegen': 1.0,
+					'componentType': 'concentratedMagicalStone',
+					'componentType2': 'flawlessMagicalStone',
+					'componentCount': [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1]
+				},
+				'Blackstar Armor': { // Same below +15 as normal armor, same as Blackstar weapon after that
+					'base': [100,100,100,100,100,  70,25.64,17.24,11.76,7.69,   6.25,5,4,2.86,2,  13.08,10.63,3.40,0.51,0.20, 0],
+					'durabilityLoss': 10.0,
+					'durabilityLoss2': 20.0,
+					'durabilityRegenItem': 'memoryFragment',
+					'durabilityRegen': 1.0,
+					'componentType': 'concentratedMagicalStone',
+					'componentType2': 'flawlessMagicalStone',
 					'componentCount': [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1]
 				}
 			};
@@ -448,10 +526,14 @@
 				'sharpFragment': 1570000,
 				'hardFragment': 1290000,
 				
+				'concentratedMagicalStone': 10000000,
+				'flawlessMagicalStone': 100000000,
+				
 				'memoryFragment': 2100000,
 				
-				'militia': 20000,
-				'reblath': 16000,
+				'militia': 13400,
+				'reblath': 12900,
+				'greenWeapon':24900,
 				'greenArmor':27000,
 				
 				'purify': 100000
@@ -460,11 +542,36 @@
 			componentPrices['concentratedArmorStone'] = componentPrices['hardFragment'] + componentPrices['armorStone']*2;
 			
 			itemPrices = {
+				'[Green Weapon (PRI)]': 38800000,
+				'[Green Weapon (DUO)]': 47600000,
+				'[Green Weapon (TRI)]': 128000000,
+				'[Green Weapon (TET)]': 431000000,
+				'[Green Weapon (PEN)]': 715000000,
 				'[Green Armor (PRI)]': 38800000,
 				'[Green Armor (DUO)]': 47600000,
 				'[Green Armor (TRI)]': 128000000,
 				'[Green Armor (TET)]': 431000000,
 				'[Green Armor (PEN)]': 715000000,
+				'[Yellow Weapon (PRI)]': 418000000,
+				'[Yellow Weapon (DUO)]': 465000000,
+				'[Yellow Weapon (TRI)]': 525000000,
+				'[Yellow Weapon (TET)]': 1440000000,
+				'[Yellow Weapon (PEN)]': 14500000000,
+				'[Yellow Armor (PRI)]': 895000000,
+				'[Yellow Armor (DUO)]': 990000000,
+				'[Yellow Armor (TRI)]': 1380000000,
+				'[Yellow Armor (TET)]': 2900000000,
+				'[Yellow Armor (PEN)]': 21600000000,
+				'[Blackstar Weapon (PRI)]': 1650000000,
+				'[Blackstar Weapon (DUO)]': 1880000000,
+				'[Blackstar Weapon (TRI)]': 2420000000,
+				'[Blackstar Weapon (TET)]': 12100000000,
+				'[Blackstar Weapon (PEN)]': 92000000000,
+				'[Blackstar Armor (PRI)]': 2070000000,
+				'[Blackstar Armor (DUO)]': 2240000000,
+				'[Blackstar Armor (TRI)]': 2800000000,
+				'[Blackstar Armor (TET)]': 12300000000,
+				'[Blackstar Armor (PEN)]': 48800000000
 			}
 			
 			let currentFailstack = 0;
@@ -550,12 +657,15 @@
 					let proba = Item.computeEnhanceProba(this.base, currentFailstack);
 					let roll = Math.random() * 100;
 					
+					let componentType = (this.rank < 15) ? this.item['componentType'] : this.item['componentType2'];
+					
 					if(roll < proba) {
 						let logTxt = `Enhance ${this.toString()} +${currentFailstack} ${proba}% SUCCESS`;
 						if(displayOnOff) $('#logs').prepend('<p style="color: green">'+logTxt+'</p>');
 						
 						currentFailstack = 0;
-						objAdd(componentsUsed, this.item['componentType'], this.item['componentCount'][this.rank]);
+						
+						objAdd(componentsUsed, componentType, this.item['componentCount'][this.rank]);
 						//objAdd(itemsProduced, this.toString(), -1);
 						this.rank += 1;
 						//objAdd(itemsProduced, this.toString(), 1);
@@ -567,8 +677,9 @@
 						//console.log(logTxt);
 						
 						currentFailstack += failstackIncreases[this.rank];
-						objAdd(componentsUsed, this.item['componentType'], this.item['componentCount'][this.rank]);
-						objAdd(componentsUsed, this.item['durabilityRegenItem'], this.item['durabilityLoss'] / this.item['durabilityRegen']);
+						objAdd(componentsUsed, componentType, this.item['componentCount'][this.rank]);
+						let durabilityLoss = (this.rank < 15) ? this.item['durabilityLoss'] : this.item['durabilityLoss2'];
+						objAdd(componentsUsed, this.item['durabilityRegenItem'], durabilityLoss / this.item['durabilityRegen']);
 						if(this.rank >= Item.rankTo20("DUO")) {
 							//objAdd(itemsProduced, this.toString(), -1);
 							this.rank -= 1;
@@ -597,9 +708,13 @@
 				}
 				
 				toDisplay() {
-					return `[${this.name} (${Item.rankToPen(this.rank)})]<br/>
-					Chance: ${Item.computeEnhanceProba(this.base, currentFailstack)}%<br/>
-					Cost: ${this.item['componentCount'][this.rank]}x ${this.item['componentType']}`;
+					let componentType = (this.rank < 15) ? this.item['componentType'] : this.item['componentType2'];
+					let durabilityLoss = (this.rank < 15) ? this.item['durabilityLoss'] : this.item['durabilityLoss2'];
+					return `[${this.name} (${Item.rankToPen(this.rank)})]<br/><br/>
+					Success : ${Item.computeEnhanceProba(this.base, currentFailstack)}%<br/><br/>
+					${this.item['componentCount'][this.rank]}x ${componentType} used per attempt<br/>
+					${durabilityLoss} durability loss on failure<br/>
+					${this.item['durabilityRegen']} durability recovered per ${this.item['durabilityRegenItem']}`;
 				}
 			}
 			
@@ -908,21 +1023,29 @@
 			<p>
 				<strong>Contact me:</strong> Family name (EU) Bvic<br/>
 				<em>Don't hesitate to send me a message if you find this tool useful, so I get the motivation to keep improving it!</em><br/>
+				
 				<br/>TODO:<br/>
-				-Optimise a strategy by finding the best FS level for each step.<br/>
-				-Allow single item enhancement starting with specified failstacks. The current version is mostly good for computing the cost of failstacks.<br/>
-				-Handle accessories<br/>
-				-Compute the time spent clicking/going to the church/buying from the market/loading from the warehouse.<br/>
-				-Enter the data for all items.<br/>
+				- Optimise a strategy by finding the best FS level for each step.<br/>
+				- Allow single item enhancement starting with specified failstacks. The current version is mostly good for computing the cost of failstacks.<br/>
+				- Handle accessories<br/>
+				- Compute the time spent clicking/going to the church/buying from the market/loading from the warehouse.<br/>
+				- Enter the data for less common items like manos and ship equipment.<br/>
+				
+				<br/>v0.3:<br/>
+				- Add Yellow/blackstar<br/>
+				- Handle properly the different materials and durability loss for below +14 and above +15.<br/>
+				- Warning : I didn't check the numbers for componentCount, durabilityLoss and durabilityRegen myself.<br/>
+				
 				<br/>v0.2:<br/>
-				-100x faster: Allow disabling endless logs.<br/>
-				-Asynchronous computing to avoid freezing the window.<br/>
-				-Change logs added!<br/>
-				-Custom strategies. It only handles reaching a failstack or enhancement success of the last item of the list. It doesn't handle enhancing a single item through all ranks.<br/>
-				-Uploaded on Github.<br/>
+				- 100x faster: Allow disabling endless logs.<br/>
+				- Asynchronous computing to avoid freezing the window.<br/>
+				- Change logs added!<br/>
+				- Custom strategies. It only handles reaching a failstack or enhancement success of the last item of the list. It doesn't handle enhancing a single item through all ranks.<br/>
+				- Uploaded on Github.<br/>
+				
 				<br/>v0.1:<br/>
-				-First version! Reblath and reblath>greenArmor strategies.<br/>
-				-Repetitions, average profit.
+				- First version! Reblath and reblath>greenArmor strategies.<br/>
+				- Repetitions, average profit.
 			</p>
 		</div>
 	</body>
