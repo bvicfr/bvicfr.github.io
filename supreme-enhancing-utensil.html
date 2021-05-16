@@ -35,7 +35,7 @@
 		}
 	</style>
 	<body>
-		<h1 style='text-align: center; margin: 5px'>Supreme Enhancing Utensil <small>v0.3.1</small></h1>
+		<h1 style='text-align: center; margin: 5px'>Supreme Enhancing Utensil <small>v0.4</small></h1>
 		<h3 style='text-align: center; margin: 5px'><small>The enhancement simulator turning random clicking into data science</small></h3>
 		<div>
 			<div style='width: 32%; float: left; margin-right: 20px'>
@@ -79,7 +79,7 @@
 							<option value="1">1</option>
 							<option value="0">0</option>
 						</select>
-						<button onclick='myItem = new Item($("#newItem").val(), Item.rankTo20($("#newItemRank").val())); updateDisplay()'>Buy item</button><br/>
+						<button onclick='myItem = new Item($("#newItem").val(), Item.rankTo20($("#newItemRank").val())); updateDisplay()'>Buy item</button><br>
 						<button onclick='myItem.enhance(); updateDisplay()'>Enhance</button>
 						<button onclick='myItem.purify(); updateDisplay()'>Purify</button>
 						<button onclick='myItem.remove(); updateDisplay()'>Sell</button>
@@ -91,7 +91,7 @@
 					</div>
 					<span>
 						<input type="text" id="newFS" placeholder="FS value">
-						<button onclick='currentFailstack = parseInt($("#newFS").val()); updateDisplay()'>Set new FS</button><br/>
+						<button onclick='currentFailstack = parseInt($("#newFS").val()); updateDisplay()'>Set new FS</button><br>
 						<button onclick='currentFailstack = (currentFailstack<25)? 0 : currentFailstack - 25; updateDisplay()'>-25</button>
 						<button onclick='currentFailstack = (currentFailstack<5)? 0 : currentFailstack - 5; updateDisplay()'>-5</button>
 						<button onclick='currentFailstack = (currentFailstack<1)? 0 : currentFailstack - 1; updateDisplay()'>-1</button>
@@ -104,17 +104,22 @@
 				
 				<div class='box'>
 					<h3>
-						Use mass processing <small id='isRunning' style='display: none'>...running...</small>
+						Use mass processing ! <small id='isRunning' style='display: none'>...running...</small>
 					</h3>
+					
+					<hr>
+					
+					<h3>Part 1: Define the failstack building strategy</h3>
+					
 					<div>
-						Repetitions: <span id=numberOfRepetitions>1</span><br/><input type="text" id="numberOfRepetitionsInput" placeholder="Number of repetitions" value="1">
+						Repetitions: <span id=numberOfRepetitions>1</span><br><input type="text" id="numberOfRepetitionsInput" placeholder="Number of repetitions" value="1">
 						<button onclick='numberOfRepetitions = parseInt($("#numberOfRepetitionsInput").val());
 						$("#numberOfRepetitions").html(String(numberOfRepetitions));
 						updateDisplay();'>Set number of repetitions</button>
-						<br/><br/>
+						<br><br>
 						
 						<!--
-						Provide the value of the failstack you want to reach.<br/>
+						Provide the value of the failstack you want to reach.<br>
 						<input type="text" id="reachFs" placeholder="Target FS">
 						<button onclick='
 							currentFailstack = 0;
@@ -125,9 +130,9 @@
 							$("#isRunning").show();
 							timeStart = new Date().getTime();
 							runRepetition(1, reachFailstackReblath, [parseInt($("#reachFs").val())]);
-						'>Reach FS with Reblath</button><br/><br/>
+						'>Reach FS with Reblath</button><br><br>
 							
-						Provide the value of the failstack you want to reach and the 4 FS values at which you start using a PRI, DUO, TRI and TET to build the FS. Example: 100, 20, 30, 50, 70<br/>
+						Provide the value of the failstack you want to reach and the 4 FS values at which you start using a PRI, DUO, TRI and TET to build the FS. Example: 100, 20, 30, 50, 70<br>
 						<input type="text" id="reachGreenFs" placeholder="Target FS">
 						<input type="text" id="reachGreenPri" placeholder="Start PRI at">
 						<input type="text" id="reachGreenDuo" placeholder="Start DUO at">
@@ -147,7 +152,7 @@
 									parseInt($("#reachGreenTri").val()),
 									parseInt($("#reachGreenTet").val())]]
 							);
-						'>Reach FS with Reblath>Green Armor</button><br/><br/>
+						'>Reach FS with Reblath>Green Armor</button><br><br>
 						<!-- -->
 						
 						<button id='autoPurifyButton' onclick='autoPurifyReblath15 = !autoPurifyReblath15; $("#autoPurifyButton").html(autoPurifyReblath15 ? "Auto-purify [Reblath (15)] is ON" : "Auto-purify [Reblath (15)] is OFF")'>Auto-purify [Reblath (15)] is ON</button>
@@ -219,10 +224,10 @@
 						</table>
 						<table id='steps'>
 							<tr><th>Start at FS</th><th>Item</th><th></th></tr>
-						</table><br/>
-						<button onclick='$("#steps").append($("#sampleStep :first-child").html())'>Add step</button><br/><br/>
+						</table><br>
+						<button onclick='$("#steps").append($("#sampleStep :first-child").html())'>Add step</button><br><br>
 						
-						Stop condition:<br/>
+						Stop condition:<br>
 						<select id='stopConditionType' onchange='
 							if($("#stopConditionType").val() == "successOnLastStep") {
 								$("#stopConditionTargetStack").hide();
@@ -233,7 +238,7 @@
 							<option value='successOnLastStep'>successOnLastStep</option>
 							<option value='reachFailstack' selected>reachFailstack</option>
 						</select>
-						<input type='text' id='stopConditionTargetStack' value='20'><br/><br/>
+						<input type='text' id='stopConditionTargetStack' value='20'><br><br>
 						<button onclick='
 							currentFailstack = playerSettings["defaultFailstack"];
 							componentsUsed = {};
@@ -242,8 +247,6 @@
 							
 							let stopCondition = {
 								type: $("#stopConditionType").val(),
-								name: $("#stopConditionName").val(),
-								rank: $("#stopConditionRank").val(),
 								targetStack: $("#stopConditionTargetStack").val()
 							};
 							
@@ -267,7 +270,63 @@
 						
 						<hr>
 						
-						<h3>Examples</h3>
+						<h3>Part 2: Optimise the strategy</h3>
+						
+						Find automatically the best failstacks levels to start each step at.<br><br>
+						
+						Not available yet. 
+						
+						<hr>
+						
+						<h3>Part 3: Compute the cost to produce failstacks</h3>
+						
+						Use the optimised strategy to compute the items and materials involved in building failstacks, for all failstack levels.<br><br>
+						
+						It is recommanded to first set repetitions to 1000 or even above to get accurate averages. It will take a few minutes to compute.<br><br>
+						
+						Maximum failstack computed: <input type='text' id='maxComputedFailstack' value='200'><br><br>
+						
+						<button id='launchFailstackComputation' onclick='
+							$("#logs").html("");							
+							
+							let arrayOfSteps = $.map($("#steps tr:not(:has(th))"), function(elem) {
+								return {
+									startStep: $(elem).find("input:first").val(),
+									name: $($(elem).find("select")[0]).val(),
+									rank: $($(elem).find("select")[1]).val()
+								}
+							});
+							
+							if(displayOnOff) {
+								toggleDisplayOnOff();
+							}
+							
+							$("#isRunning").show();
+							failstackComputeTimeStart = new Date().getTime();
+							timeStart = new Date().getTime();
+							
+							runFailstackLevel(playerSettings["defaultFailstack"]+1, Number($("#maxComputedFailstack").val()), 1, arrayOfSteps);
+						'>Launch the computation</button>
+						
+						<hr>
+						
+						<h3>Part 4: Define the single item enhancing strategy</h3>
+						
+						Load failstacks when necessary to enhance a single item increasing and decreasing in rank.<br><br>
+						
+						Not available yet.
+						
+						<hr>
+						
+						<h3>Part 5: Optimise the single item strategy</h3>
+						
+						Optimise the strategy and then ... at last ... profit.<br><br>
+						
+						Not available yet.
+						
+						<hr>
+						
+						<h3>Examples of strategies</h3>
 						
 						<p>Classic [Reblath (14)] to build a failstack of +20.</p>
 						<button onclick='
@@ -329,6 +388,13 @@
 				</div>
 				<div class='box'>
 					<h3>
+							Failstacks used
+					</h3>
+					<table id='failstacksUsed'>
+					</table>
+				</div>
+				<div class='box'>
+					<h3>
 							Component prices <button id="editComponents" onclick='modeEditComponents = true;
 								$("#editComponents").hide();
 								$("#saveComponents").show();
@@ -379,6 +445,13 @@
 					<table id='playerSettings'>
 					</table>
 				</div>
+				<div class='box'>
+					<h3>
+							Failstack costs
+					</h3>
+					<table id='failstackCosts'>
+					</table>
+				</div>
 			</div>
 			<div style='width: 28%; float: left;'>
 				<div class='box'>
@@ -408,14 +481,14 @@
 					if(i > numberOfRepetitions) {
 						let timeEnd = new Date().getTime();
 						$("#isRunning").hide();
-						$("#logs").prepend("<p>>>>Duration: "+String((timeEnd-timeStart)*1.0/1000)+"s Repetitions: "+String(numberOfRepetitions)+"</p>");
+						$("#logs").prepend("<p>... Duration: "+String((timeEnd-timeStart)*1.0/1000)+"s Repetitions: "+String(numberOfRepetitions)+"</p>");
 						return;
 					}
 				
 					currentFailstack = playerSettings['defaultFailstack'];
 					func.apply(null, params);
 					
-					if(displayOnOff) $("#logs").prepend("<p>>>>Repetition "+i+" / "+numberOfRepetitions+" done</p>");
+					if(displayOnOff) $("#logs").prepend("<p>... Repetition "+i+" / "+numberOfRepetitions+" done</p>");
 					updateDisplay();
 				}
 				
@@ -424,9 +497,49 @@
 				},10);
 			}
 			
+			function runFailstackLevel(level, maxLevel, repetition, arrayOfSteps) {
+				$("#isRunning").html('...fs'+level+' / '+maxLevel+'......'+(repetition-1)+' / '+numberOfRepetitions+'...');
+				
+				let stopCondition = {'type': 'reachFailstack', 'targetStack': level}
+				
+				for(let i=repetition; i<repetition+50; i++) {
+					
+					if(i > numberOfRepetitions) {
+						let timeEnd = new Date().getTime();
+						$("#logs").prepend("<p>... fs"+level+" Duration: "+String((timeEnd-timeStart)*1.0/1000)+"s Repetitions: "+String(numberOfRepetitions)+"</p>");
+						
+						failstackCosts[level] = -totalProfitTax;
+						updateFailstackCostsDisplay();
+						
+						level++;
+						repetition = 1-50;
+						componentsUsed = {};
+						itemsProduced = {};
+						timeStart = new Date().getTime();
+						break;
+					}
+				
+					currentFailstack = playerSettings['defaultFailstack'];
+					runStrategy(stopCondition, arrayOfSteps);
+					
+					updateDisplay(); // Prices are computed during during this function call
+				}
+				
+				if(level > maxLevel) {
+					let failstackComputeTimeEnd = new Date().getTime();
+					$("#isRunning").hide();
+					$("#logs").prepend("<p>... All "+maxLevel+" levels completed in "+String((failstackComputeTimeEnd-failstackComputeTimeStart)*1.0/1000)+"s</p>");
+					return;
+				}
+				
+				setTimeout(function() {
+					runFailstackLevel(level, maxLevel, repetition+50, arrayOfSteps);
+				},10);
+			}
+			
 			let displayOnOff = true; // True = On, False = Off
 			let numberOfRepetitions = 1;
-			let timeStart;
+			let timeStart, failstackComputeTimeStart;
 			let typeOfDisplay = 'average';
 			let modeEditComponents = false;
 			let modeEditItems = false;
@@ -561,7 +674,6 @@
 			function computeConcentratedFromMaterials () {
 				componentPrices['concentratedWeaponStone'] = componentPrices['sharpFragment'] + componentPrices['weaponStone']*2;
 				componentPrices['concentratedArmorStone'] = componentPrices['hardFragment'] + componentPrices['armorStone']*2;
-				console.log(componentPrices['concentratedArmorStone'])
 			}
 			computeConcentratedFromMaterials();
 			
@@ -596,6 +708,12 @@
 				'[Blackstar Armor (TRI)]': 2800000000,
 				'[Blackstar Armor (TET)]': 12300000000,
 				'[Blackstar Armor (PEN)]': 48800000000
+			}
+			
+			failstackCosts = {
+				'10': {'silver': 0},
+				'20': {'silver': 0},
+				'100': {'silver': 0}
 			}
 			
 			let playerSettings = {
@@ -634,6 +752,9 @@
 			let totalProfitNoTax;
 			let totalProfitTax;
 			let marketTaxFactor = 0.85;
+			
+			let failstacksUsed = {'10': 0};
+			let failstacksUsedProfits = {};
 			
 			
 			class Item {
@@ -739,10 +860,10 @@
 				toDisplay() {
 					let componentType = (this.rank < 15) ? this.item['componentType'] : this.item['componentType2'];
 					let durabilityLoss = (this.rank < 15) ? this.item['durabilityLoss'] : this.item['durabilityLoss2'];
-					return `[${this.name} (${Item.rankToPen(this.rank)})]<br/><br/>
-					Success : ${Item.computeEnhanceProba(this.base, currentFailstack)}%<br/><br/>
-					${this.item['componentCount'][this.rank]}x ${componentType} used per attempt<br/>
-					${durabilityLoss} durability loss on failure<br/>
+					return `[${this.name} (${Item.rankToPen(this.rank)})]<br><br>
+					Success : ${Item.computeEnhanceProba(this.base, currentFailstack)}%<br><br>
+					${this.item['componentCount'][this.rank]}x ${componentType} used per attempt<br>
+					${durabilityLoss} durability lost on failure<br>
 					${this.item['durabilityRegen']} durability recovered per ${this.item['durabilityRegenItem']}`;
 				}
 			}
@@ -856,6 +977,13 @@
 				$('#itemsProduced').append('<tr><th>Total (items - components)</th><th></th><th>'+displayCompactNumber(totalProfitNoTax)+'</th><th>'+displayCompactNumber(totalProfitTax)+'</th></tr>');
 			}
 			
+			function updateFailstackCostsDisplay() {
+				$('#failstackCosts').html('');
+				$('#failstackCosts').append('<tr><th>Failstack</th><th>Cost taxed</th></tr>');
+				for (let [key, value] of Object.entries(failstackCosts)) {
+					$('#failstackCosts').append('<tr><td>'+key+'</td><td>'+displayCompactNumber(value)+'</td></tr>');
+				}
+			}
 			
 			function saveComponentPrices() {
 				for (let [key, value] of Object.entries(componentPrices)) {
@@ -1079,38 +1207,45 @@
 		
 		<div id="changeLogs" style="display:none">
 			<p>
-				<strong>Contact me:</strong> Family name (EU) Bvic<br/>
-				<em>Don't hesitate to send me a message if you find this tool useful, so I get the motivation to keep improving it!</em><br/>
+				<strong>Contact me:</strong> Family name (EU) Bvic<br>
+				<em>Don't hesitate to send me a message if you find this tool useful, so I get the motivation to keep improving it!</em><br>
 				
-				<br/>TODO:<br/>
-				- Optimise a strategy by finding the best FS level for each step.<br/>
-				- Allow single item enhancement starting with specified failstacks. The current version is mostly good for computing the cost of failstacks.<br/>
-				- Handle accessories<br/>
-				- Compute the time spent clicking/going to the church/buying from the market/loading from the warehouse.<br/>
-				- Enter the data for less common items like manos and ship equipment.<br/>
+				<br>TODO:<br>
+				- Optimise a strategy by finding the best FS level for each step.<br>
+				- Allow single item enhancement starting with specified failstacks. The current version is mostly good for computing the cost of failstacks.<br>
+				- Handle accessories<br>
+				- Compute the time spent clicking/going to the church/buying from the market/loading from the warehouse.<br>
+				- Enter the data for less common items like manos and ship equipment.<br>
 				
-				<br/>v0.3.1:<br/>
-				- Handle the default failstack from the adventure log<br/>
-				- No infinite loop when no step is valid.<br/>
-				- Button compute the price of concentrated black stones from materials.<br/>
+				<br>v0.4<br>
+				- Compute the cost of failstacks.<br>
 				
-				<br/>v0.3:<br/>
-				- Add Yellow/blackstar<br/>
-				- Handle properly the different materials and durability loss for below +14 and above +15.<br/>
-				- Warning : I didn't check the numbers for componentCount, durabilityLoss and durabilityRegen myself.<br/>
 				
-				<br/>v0.2:<br/>
-				- 100x faster: Allow disabling endless logs.<br/>
-				- Asynchronous computing to avoid freezing the window.<br/>
-				- Change logs added!<br/>
-				- Custom strategies. It only handles reaching a failstack or enhancement success of the last item of the list. It doesn't handle enhancing a single item through all ranks.<br/>
-				- Uploaded on Github.<br/>
+				<br>v0.3.1:<br>
+				- Handle the default failstack from the adventure log.<br>
+				- No infinite loop when no step is valid.<br>
+				- Button compute the price of concentrated black stones from materials.<br>
 				
-				<br/>v0.1:<br/>
-				- First version! Reblath and reblath>greenArmor strategies.<br/>
+				<br>v0.3:<br>
+				- Add Yellow/blackstar<br>
+				- Handle properly the different materials and durability loss for below +14 and above +15.<br>
+				- Warning : I didn't check the numbers for componentCount, durabilityLoss and durabilityRegen myself.<br>
+				
+				<br>v0.2:<br>
+				- 100x faster: Allow disabling endless logs.<br>
+				- Asynchronous computing to avoid freezing the window.<br>
+				- Change logs added!<br>
+				- Custom strategies. It only handles reaching a failstack or enhancement success of the last item of the list. It doesn't handle enhancing a single item through all ranks.<br>
+				- Uploaded on Github.<br>
+				
+				<br>v0.1:<br>
+				- First version! Reblath and reblath>greenArmor strategies.<br>
 				- Repetitions, average profit.
 			</p>
 		</div>
 	</body>
 
-</html> 
+</html>
+
+
+
