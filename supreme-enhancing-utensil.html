@@ -1394,7 +1394,7 @@
 					if(currentFailstack >= nextStack) {
 						naderr.push(currentFailstack);
 						naderr.sort(function(a, b){return a - b});
-						if(displayOnOff) $('#logs').prepend('<p style="color: cyan">Store failstack of +'+currentFailstack+' in Naderr\'s belt '+JSON.stringify(naderr)+'</p>');
+						if(displayOnOff) $('#logs').prepend('<p style="color: rgb(75, 129, 232)">Store failstack of +'+currentFailstack+' in Naderr\'s belt '+JSON.stringify(naderr)+'</p>');
 						currentFailstack = playerSettings['defaultFailstack'];
 					}
 					
@@ -1403,7 +1403,7 @@
 							if(naderr[i] >= startStack && naderr[i] < nextStack) {
 								currentFailstack = naderr[i];
 								naderr.splice(i, 1); // remove i-th element
-								if(displayOnOff) $('#logs').prepend('<p style="color: cyan">Retrieve failstack of +'+currentFailstack+' from Naderr\'s belt '+JSON.stringify(naderr)+'</p>');
+								if(displayOnOff) $('#logs').prepend('<p style="color: rgb(75, 129, 232)">Retrieve failstack of +'+currentFailstack+' from Naderr\'s belt '+JSON.stringify(naderr)+'</p>');
 								break;
 							}
 						}
@@ -1412,7 +1412,7 @@
 					if(currentFailstack < startStack) {
 						currentFailstack = startStack;
 						failstacksUsed[startStack] = (failstacksUsed[startStack] == undefined) ? 1 : failstacksUsed[startStack]+1;
-						if(displayOnOff) $('#logs').prepend('<p style="color: cyan">Load failstack +'+startStack+'</p>');
+						if(displayOnOff) $('#logs').prepend('<p style="color: rgb(75, 129, 232)">Load failstack +'+startStack+'</p>');
 					}
 					
 					myItem.enhance();
