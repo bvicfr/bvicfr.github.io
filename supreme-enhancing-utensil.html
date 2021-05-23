@@ -50,7 +50,7 @@
 		}
 	</style>
 	<body>
-		<h1 style='text-align: center; margin: 5px'>Supreme Enhancing Utensil <small>v0.5</small></h1>
+		<h1 style='text-align: center; margin: 5px'>Supreme Enhancing Utensil <small>v0.5.1</small></h1>
 		<h3 style='text-align: center; margin: 5px'><small>The enhancement simulator turning random clicking into data science</small></h3>
 		<div>
 			<div style='width: 32%; float: left; margin-right: 20px'>
@@ -70,6 +70,8 @@
 							<option value="Blackstar Armor">Blackstar Armor</option>
 							<option value="Tuvala Weapon">Tuvala Weapon</option>
 							<option value="Tuvala Armor">Tuvala Armor</option>
+							<option value="Green Ship Part">Green Ship Part</option>
+							<option value="Blue Ship Part">Blue Ship Part</option>
 						</select>
 						<select id="newItemRank">
 							<option value="PEN">PEN</option>
@@ -207,6 +209,8 @@
 										<option value="Blackstar Armor">Blackstar Armor</option>
 										<option value="Tuvala Weapon">Tuvala Weapon</option>
 										<option value="Tuvala Armor">Tuvala Armor</option>
+										<option value="Green Ship Part">Green Ship Part</option>
+										<option value="Blue Ship Part">Blue Ship Part</option>
 									</select>
 									<select>
 										<option value="TET">TET</option>
@@ -408,6 +412,8 @@
 							<option value="Blackstar Armor">Blackstar Armor</option>
 							<option value="Tuvala Weapon">Tuvala Weapon</option>
 							<option value="Tuvala Armor">Tuvala Armor</option>
+							<option value="Green Ship Part">Green Ship Part</option>
+							<option value="Blue Ship Part">Blue Ship Part</option>
 						</select>
 						
 						Start: 
@@ -804,6 +810,28 @@
 					'componentType': 'concentratedMagicalStone',
 					'componentType2': 'flawlessMagicalStone',
 					'componentCount': [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1]
+				},
+				'Green Ship Part': {
+					'base': [70,60,50,45,40,  37,35,33,31,30,   0,0,0,0,0,  0,0,0,0,0, 0],
+					'durabilityLoss': 5.0,
+					'durabilityLoss2': 10.0,
+					'durabilityRegenItem': 'memoryFragment',
+					'durabilityRegen': 5.0,
+					'componentType': 'fieryBlackStone',
+					'componentType2': 'frostedBlackStone',
+					'componentCount': [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1],
+					'stage2Rank': 5
+				},
+				'Blue Ship Part': {
+					'base': [30,25,20,15,12,  10,5,3,2,1,   0,0,0,0,0,  0,0,0,0,0, 0],
+					'durabilityLoss': 5.0,
+					'durabilityLoss2': 10.0,
+					'durabilityRegenItem': 'memoryFragment',
+					'durabilityRegen': 2.0,
+					'componentType': 'fieryBlackStone',
+					'componentType2': 'frostedBlackStone',
+					'componentCount': [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1],
+					'stage2Rank': 5
 				}
 			};
 			
@@ -918,6 +946,7 @@
 					this.item = allItems[this.name];
 					this.rank = Item.rankTo20(rawRank);
 					this.base = allItems[this.name]['base'][this.rank];
+					this.stage2Rank = (allItems[this.name]['stage2Rank'] == undefined) ? 15 : allItems[this.name]['stage2Rank'];
 					objAdd(itemsProduced, this.toString(), -1);
 					if(displayOnOff) $('#logs').prepend('<p style="color: brown">'+this.toString()+' bought</p>');
 				}
@@ -962,7 +991,7 @@
 					let proba = Item.computeEnhanceProba(this.base, currentFailstack);
 					let roll = Math.random() * 100;
 					
-					let componentType = (this.rank < 15) ? this.item['componentType'] : this.item['componentType2'];
+					let componentType = (this.rank < this.stage2Rank) ? this.item['componentType'] : this.item['componentType2'];
 					
 					if(roll < proba) {
 						let logTxt = `Enhance ${this.toString()} +${currentFailstack} ${proba}% SUCCESS`;
@@ -983,7 +1012,7 @@
 						
 						currentFailstack += failstackIncreases[this.rank];
 						objAdd(componentsUsed, componentType, this.item['componentCount'][this.rank]);
-						let durabilityLoss = (this.rank < 15) ? this.item['durabilityLoss'] : this.item['durabilityLoss2'];
+						let durabilityLoss = (this.rank < this.stage2Rank) ? this.item['durabilityLoss'] : this.item['durabilityLoss2'];
 						objAdd(componentsUsed, this.item['durabilityRegenItem'], durabilityLoss / this.item['durabilityRegen']);
 						if(this.rank >= Item.rankTo20("DUO")) {
 							//objAdd(itemsProduced, this.toString(), -1);
@@ -1013,8 +1042,8 @@
 				}
 				
 				toDisplay() {
-					let componentType = (this.rank < 15) ? this.item['componentType'] : this.item['componentType2'];
-					let durabilityLoss = (this.rank < 15) ? this.item['durabilityLoss'] : this.item['durabilityLoss2'];
+					let componentType = (this.rank < this.stage2Rank) ? this.item['componentType'] : this.item['componentType2'];
+					let durabilityLoss = (this.rank < this.stage2Rank) ? this.item['durabilityLoss'] : this.item['durabilityLoss2'];
 					return `[${this.name} (${Item.rankToPen(this.rank)})]<br><br>
 					Success : ${Item.computeEnhanceProba(this.base, currentFailstack)}%<br><br>
 					${this.item['componentCount'][this.rank]}x ${componentType} used per attempt<br>
@@ -1449,6 +1478,9 @@
 				- Handle accessories<br>
 				- Compute the time spent clicking/going to the church/buying from the market/loading from the warehouse.<br>
 				- Enter the data for less common items like manos and ship equipment.<br>
+				
+				<br>v0.5.1: (23/05/2021)<br>
+				- Ship green and blue gear added. Slight modification to allow either rank 5 or rank 15 switch to more expensive components/durability loss.<br>
 				
 				<br>v0.5: (18/05/2021)<br>
 				- Single item strategy.<br>
