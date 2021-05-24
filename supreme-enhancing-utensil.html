@@ -50,7 +50,7 @@
 		}
 	</style>
 	<body>
-		<h1 style='text-align: center; margin: 5px'>Supreme Enhancing Utensil <small>v0.5.1</small></h1>
+		<h1 style='text-align: center; margin: 5px'>Supreme Enhancing Utensil <small>v0.6</small></h1>
 		<h3 style='text-align: center; margin: 5px'><small>The enhancement simulator turning random clicking into data science</small></h3>
 		<div>
 			<div style='width: 32%; float: left; margin-right: 20px'>
@@ -59,7 +59,7 @@
 						Bonjour
 					</div>
 					<div>
-						<select id="newItem">
+						<select id="newItemName">
 							<option value="Militia">Militia</option>
 							<option value="Reblath">Reblath</option>
 							<option value="Green Weapon">Green Weapon</option>
@@ -70,6 +70,7 @@
 							<option value="Blackstar Armor">Blackstar Armor</option>
 							<option value="Tuvala Weapon">Tuvala Weapon</option>
 							<option value="Tuvala Armor">Tuvala Armor</option>
+							<option value="GBY Accessory">GBY Accessory</option>
 							<option value="Green Ship Part">Green Ship Part</option>
 							<option value="Blue Ship Part">Blue Ship Part</option>
 						</select>
@@ -96,10 +97,10 @@
 							<option value="1">1</option>
 							<option value="0">0</option>
 						</select>
-						<button onclick='myItem = new Item($("#newItem").val(), Item.rankTo20($("#newItemRank").val())); updateDisplay()'>Buy item</button><br>
+						<button onclick='myItem = createItem($("#newItemName").val(), $("#newItemRank").val()); updateDisplay()'>Buy item</button><br>
 						<button onclick='myItem.enhance(); updateDisplay()'>Enhance</button>
 						<button onclick='myItem.purify(); updateDisplay()'>Purify</button>
-						<button onclick='myItem.remove(); updateDisplay()'>Sell</button>
+						<button onclick='myItem.sell(); updateDisplay()'>Sell</button>
 					</div>
 				</div>
 				<div class='box'>
@@ -155,44 +156,6 @@
 					</table>
 					<div id='failstackMode'>
 						<h3>Part 1: Define the failstack building strategy</h3>
-						
-						<!--
-						Provide the value of the failstack you want to reach.<br>
-						<input type="text" id="reachFs" placeholder="Target FS">
-						<button onclick='
-							currentFailstack = 0;
-							componentsUsed = {};
-							itemsProduced = {};
-							$("#logs").html("");
-							
-							$("#isRunning").show();
-							timeStart = new Date().getTime();
-							runRepetition(1, reachFailstackReblath, [parseInt($("#reachFs").val())]);
-						'>Reach FS with Reblath</button><br><br>
-							
-						Provide the value of the failstack you want to reach and the 4 FS values at which you start using a PRI, DUO, TRI and TET to build the FS. Example: 100, 20, 30, 50, 70<br>
-						<input type="text" id="reachGreenFs" placeholder="Target FS">
-						<input type="text" id="reachGreenPri" placeholder="Start PRI at">
-						<input type="text" id="reachGreenDuo" placeholder="Start DUO at">
-						<input type="text" id="reachGreenTri" placeholder="Start TRI at">
-						<input type="text" id="reachGreenTet" placeholder="Start TET at">
-						<button onclick='
-							currentFailstack = 0;
-							componentsUsed = {};
-							itemsProduced = {};
-							$("#logs").html("");
-							
-							$("#isRunning").show();
-							timeStart = new Date().getTime();
-							runRepetition(1, reachFailstackGreenArmor, [parseInt($("#reachGreenFs").val()),
-									[parseInt($("#reachGreenPri").val()),
-									parseInt($("#reachGreenDuo").val()),
-									parseInt($("#reachGreenTri").val()),
-									parseInt($("#reachGreenTet").val())]]
-							);
-						'>Reach FS with Reblath>Green Armor</button><br><br>
-						<!-- -->
-						
 						<button id='autoPurifyButton' onclick='autoPurifyReblath15 = !autoPurifyReblath15; $("#autoPurifyButton").html(autoPurifyReblath15 ? "Auto-purify [Reblath (15)] is ON" : "Auto-purify [Reblath (15)] is OFF")'>Auto-purify [Reblath (15)] is ON</button>
 						<table id="sampleStep" style="display:none">
 							<tr>
@@ -209,6 +172,7 @@
 										<option value="Blackstar Armor">Blackstar Armor</option>
 										<option value="Tuvala Weapon">Tuvala Weapon</option>
 										<option value="Tuvala Armor">Tuvala Armor</option>
+										<option value="GBY Accessory">GBY Accessory</option>
 										<option value="Green Ship Part">Green Ship Part</option>
 										<option value="Blue Ship Part">Blue Ship Part</option>
 									</select>
@@ -238,26 +202,24 @@
 								<td><button onclick='
 									let newStartStep = $(this).parent().parent().find("input").val();
 									let newName = $(this).parent().parent().find("select").first().val();
-									let newRank = Item.rankToPen(
-										Item.rankTo20( $(this).parent().parent().find("select").last().val() ) + 1
-									);
-									if(newRank == "PEN") newRank = "TET";
+									let newRankPen = Item.rankToPen(Math.min(19, Item.rankTo20(
+										$(this).parent().parent().find("select").last().val()
+									) + 1));
 									
 									let index = $(this).parent().parent().index("#steps tr");
 									
-									addStep(newStartStep, newName, newRank, index);
+									addStep(newStartStep, newName, newRankPen, index);
 								'>+</button>
 								<button onclick='
 									let newStartStep = $(this).parent().parent().find("input").val();
 									let newName = $(this).parent().parent().find("select").first().val();
-									let newRank = Item.rankToPen(
-										Item.rankTo20( $(this).parent().parent().find("select").last().val() ) - 1
-									);
-									if(newRank == -1) newRank = 0;
+									let newRankPen = Item.rankToPen(Math.max(0, Item.rankTo20(
+										$(this).parent().parent().find("select").last().val()
+									) - 1));
 									
 									let index = $(this).parent().parent().index("#steps tr");
 									
-									addStep(newStartStep, newName, newRank, index-1);
+									addStep(newStartStep, newName, newRankPen, index-1);
 								'>-</button>
 								<button onclick='$(this).parent().parent().remove()'>X</button></td>
 							</tr>
@@ -280,7 +242,7 @@
 						</select>
 						<input type='text' id='stopConditionTargetStack' value='20'><br><br>
 						<button onclick='
-							currentFailstack = playerSettings["defaultFailstack"];
+							currentFailstack = playerSettings["permanentFailstack"];
 							componentsUsed = {};
 							itemsProduced = {};
 							naderr = [];
@@ -347,14 +309,14 @@
 							failstackComputeTimeStart = new Date().getTime();
 							timeStart = new Date().getTime();
 							
-							myItem = new Item(arrayOfSteps[0].name, Item.rankTo20(arrayOfSteps[0].rank));
-							currentFailstack = playerSettings["defaultFailstack"];
+							myItem = createItem(arrayOfSteps[0].name, arrayOfSteps[0].rank);
+							currentFailstack = playerSettings["permanentFailstack"];
 							componentsUsed = {};
 							itemsProduced = {};
 							naderr = [];
 							failstacksUsed = {};
 							
-							runFailstackLevel(playerSettings["defaultFailstack"]+1, Number($("#maxComputedFailstack").val()), 1, arrayOfSteps);
+							runFailstackLevel(playerSettings["permanentFailstack"]+1, Number($("#maxComputedFailstack").val()), 1, arrayOfSteps);
 						'>Launch the computation</button>
 						
 						<hr>
@@ -400,6 +362,8 @@
 						If the failstack goes above the threshold of the next rank, it is stored in the Naderr's band.<br>
 						Failstacks in the Naderr's band are kept for following repetitions.<br><br>
 						I have no idea whether extra failstacks in the Naderr's band at the end of repetitions should be valued, currently they are worthless but still displayed so you can get an idea of the excess production of failstacks. There is also no way to force using excess failstacks on lower rank items.<br><br>
+						For accessories, if you want to start from rank 0, set Start at 15 (I'm too lazy to make an adapted display just for accessories)<br><br>
+						
 						
 						<select id="singleName">
 							<option value="Militia">Militia</option>
@@ -412,6 +376,7 @@
 							<option value="Blackstar Armor">Blackstar Armor</option>
 							<option value="Tuvala Weapon">Tuvala Weapon</option>
 							<option value="Tuvala Armor">Tuvala Armor</option>
+							<option value="GBY Accessory">GBY Accessory</option>
 							<option value="Green Ship Part">Green Ship Part</option>
 							<option value="Blue Ship Part">Blue Ship Part</option>
 						</select>
@@ -483,7 +448,7 @@
 						</table><br>
 						
 						<button onclick='
-							currentFailstack = playerSettings["defaultFailstack"];
+							currentFailstack = playerSettings["permanentFailstack"];
 							componentsUsed = {};
 							itemsProduced = {};
 							naderr = [];
@@ -493,6 +458,11 @@
 							let singleName =  $("#singleName").val();
 							let singleStart =  $("#singleStart").val();
 							let singleGoal =  $("#singleGoal").val();
+							
+							if(getType(singleName) == "accessory") {
+								playerSettings["accessoryResetRank"] = Accessory.rankToPen(Accessory.rankTo20(singleStart));
+								updateSettings();
+							}
 							
 							let arrayOfSteps = $.map($("#singleSteps input"), function(elem) {return $(elem).val()});
 							
@@ -645,7 +615,7 @@
 						return;
 					}
 				
-					currentFailstack = playerSettings['defaultFailstack'];
+					currentFailstack = playerSettings['permanentFailstack'];
 					func.apply(null, params);
 					
 					if(displayOnOff) $("#logs").prepend("<p>... Repetition "+i+" / "+numberOfRepetitions+" done</p>");
@@ -673,14 +643,14 @@
 						
 						level++;
 						repetition = 1-50;
-						myItem = new Item(arrayOfSteps[0].name, Item.rankTo20(arrayOfSteps[0].rank));
+						myItem = createItem(arrayOfSteps[0].name, arrayOfSteps[0].rank);
 						componentsUsed = {};
 						itemsProduced = {};
 						timeStart = new Date().getTime();
 						break;
 					}
 				
-					currentFailstack = playerSettings['defaultFailstack'];
+					currentFailstack = playerSettings['permanentFailstack'];
 					runStrategy(stopCondition, arrayOfSteps);
 					
 					updateDisplay(); // Prices are computed during during this function call
@@ -832,6 +802,11 @@
 					'componentType2': 'frostedBlackStone',
 					'componentCount': [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1],
 					'stage2Rank': 5
+				},
+				'GBY Accessory': {
+					'base': [25, 10, 7.5, 2.5, 0.5, 0],
+					'softcap': [70, 50, 40, 30, 25, 0],
+					'type': 'accessory'
 				}
 			};
 			
@@ -895,18 +870,25 @@
 				'[Blackstar Armor (DUO)]': 2240000000,
 				'[Blackstar Armor (TRI)]': 2800000000,
 				'[Blackstar Armor (TET)]': 12300000000,
-				'[Blackstar Armor (PEN)]': 48800000000
+				'[Blackstar Armor (PEN)]': 48800000000,
+				'[GBY Accessory (0)]': 64500000,
+				'[GBY Accessory (PRI)]': 175000000,
+				'[GBY Accessory (DUO)]': 590000000,
+				'[GBY Accessory (TRI)]': 1830000000,
+				'[GBY Accessory (TET)]': 7950000000,
+				'[GBY Accessory (PEN)]': 73000000000
 			}
 			
 			failstackCosts = {
 			}
 			
 			let playerSettings = {
-				'defaultFailstack': 1
+				'permanentFailstack': 1,
+				'accessoryResetRank': 'PRI'
 			};
 			
 			
-			let currentFailstack = playerSettings['defaultFailstack'];
+			let currentFailstack = playerSettings['permanentFailstack'];
 			
 			/*let componentsUsed = {
 				'weaponStone': 0,
@@ -944,10 +926,13 @@
 			
 			
 			class Item {
-				constructor(name, rawRank) {
+				//rawRank should be a string in PEN format
+				//this.rank is a number in 20 format
+				constructor(name, rankPen) {
 					this.name = name;
+					this.type ='item';
 					this.item = allItems[this.name];
-					this.rank = Item.rankTo20(rawRank);
+					this.rank = Item.rankTo20(rankPen);
 					this.base = allItems[this.name]['base'][this.rank];
 					this.stage2Rank = (allItems[this.name]['stage2Rank'] == undefined) ? 15 : allItems[this.name]['stage2Rank'];
 					objAdd(itemsProduced, this.toString(), -1);
@@ -977,6 +962,14 @@
 					return Number(rank);
 				}
 				
+				rankToPen() {
+					return Item.rankToPen(this.rank);
+				}
+				
+				rankTo20() {
+					return this.rank;
+				}
+				
 				static computeEnhanceProba(base, failstack) {
 					let proba = base;
 					for(let i=0; i<failstack; i++) {
@@ -1000,7 +993,7 @@
 						let logTxt = `Enhance ${this.toString()} +${currentFailstack} ${proba}% SUCCESS`;
 						if(displayOnOff) $('#logs').prepend('<p style="color: green">'+logTxt+'</p>');
 						
-						currentFailstack = playerSettings['defaultFailstack'];
+						currentFailstack = playerSettings['permanentFailstack'];
 						
 						objAdd(componentsUsed, componentType, this.item['componentCount'][this.rank]);
 						//objAdd(itemsProduced, this.toString(), -1);
@@ -1018,9 +1011,8 @@
 						let durabilityLoss = (this.rank < this.stage2Rank) ? this.item['durabilityLoss'] : this.item['durabilityLoss2'];
 						objAdd(componentsUsed, this.item['durabilityRegenItem'], durabilityLoss / this.item['durabilityRegen']);
 						if(this.rank >= Item.rankTo20("DUO")) {
-							//objAdd(itemsProduced, this.toString(), -1);
 							this.rank -= 1;
-							//objAdd(itemsProduced, this.toString(), 1);
+							
 							this.base = allItems[this.name]['base'][this.rank];
 						}
 						return "fail";
@@ -1028,26 +1020,30 @@
 				}
 				
 				purify() {
+					if(this.rank == 0) {
+						if(displayOnOff) $('#logs').prepend('<p style="color: pink">Already rank 0, nothing done</p>');
+						return;
+					}
 					if(displayOnOff) $('#logs').prepend('<p style="color: pink">'+this.toString()+' purified</p>');
 					objAdd(componentsUsed, 'purify', 1);
-					//objAdd(itemsProduced, this.toString(), -1);
+					
 					this.rank -=1;
-					//objAdd(itemsProduced, this.toString(), 1);
+					
 					this.base = allItems[this.name]['base'][this.rank];
 				}
 				
 				toString() {
-					return `[${this.name} (${Item.rankToPen(this.rank)})]`;
+					return `[${this.name} (${this.rankToPen()})]`;
 				}
 				
 				toInfoString() {
-					return `[${this.name} (${Item.rankToPen(this.rank)})] Base: ${this.base} `;
+					return `[${this.name} (${this.rankToPen()})] Base: ${this.base} `;
 				}
 				
 				toDisplay() {
 					let componentType = (this.rank < this.stage2Rank) ? this.item['componentType'] : this.item['componentType2'];
 					let durabilityLoss = (this.rank < this.stage2Rank) ? this.item['durabilityLoss'] : this.item['durabilityLoss2'];
-					return `[${this.name} (${Item.rankToPen(this.rank)})]<br><br>
+					return `[${this.name} (${this.rankToPen()})]<br><br>
 					Success : ${Item.computeEnhanceProba(this.base, currentFailstack)}%<br><br>
 					${this.item['componentCount'][this.rank]}x ${componentType} used per attempt<br>
 					${durabilityLoss} durability lost on failure<br>
@@ -1055,11 +1051,146 @@
 				}
 			}
 			
+			class Accessory {
+				constructor(name, rankPen) {
+					this.name = name;
+					this.type ='accessory';
+					this.item = allItems[this.name];
+					this.rank = Accessory.rankTo20(rankPen);
+					this.base = allItems[this.name]['base'][this.rank];
+					this.softcap = allItems[this.name]['softcap'][this.rank];
+					objAdd(itemsProduced, this.toString(), -1);
+					if(displayOnOff) $('#logs').prepend('<p style="color: brown">'+this.toString()+' bought</p>');
+				}
+				
+				sell() {
+					objAdd(itemsProduced, this.toString(), 1);
+					if(displayOnOff) $('#logs').prepend('<p style="color: brown">'+this.toString()+' sold</p>');
+				}
+				
+				static rankToPen(rank) {
+					if(rank == 1) return 'PRI';
+					if(rank == 2) return 'DUO';
+					if(rank == 3) return 'TRI';
+					if(rank == 4) return 'TET';
+					if(rank == 5) return 'PEN';
+					return '0';
+				}
+				
+				static rankTo20(rank) {
+					if(rank == 'PRI') return 1;
+					if(rank == 'DUO') return 2;
+					if(rank == 'TRI') return 3;
+					if(rank == 'TET') return 4;
+					if(rank == 'PEN') return 5;
+					return 0;
+				}
+				
+				rankToPen() {
+					return Accessory.rankToPen(this.rank);
+				}
+				
+				rankTo20() {
+					return this.rank;
+				}
+				
+				static computeEnhanceProba(base, softcap, failstack) {
+					let proba = base;
+					for(let i=0; i<failstack; i++) {
+						if(proba < softcap) {
+							proba += base/10;
+						} else if(proba>=softcap && proba<90) {
+							proba += base/50
+						}
+					}
+					return proba.toFixed(3);
+				}
+				
+				enhance() {
+					//global: currentFailstack
+					let proba = Accessory.computeEnhanceProba(this.base, this.softcap, currentFailstack);
+					let roll = Math.random() * 100;
+					
+					let componentType = `[${this.name} (0)]`;
+					
+					if(roll < proba) {
+						let logTxt = `Enhance ${this.toString()} +${currentFailstack} ${proba}% SUCCESS`;
+						if(displayOnOff) $('#logs').prepend('<p style="color: green">'+logTxt+'</p>');
+						
+						currentFailstack = playerSettings['permanentFailstack'];
+						
+						objAdd(itemsProduced, componentType, -1);
+						
+						this.rank += 1;
+						
+						this.base = allItems[this.name]['base'][this.rank];
+						this.softcap = allItems[this.name]['softcap'][this.rank];
+						return "success";
+					} else {
+						let logTxt = `Enhance ${this.toString()} +${currentFailstack} ${proba}% FAIL`;
+						if(displayOnOff) $('#logs').prepend('<p style="color: red">'+logTxt+'</p>');
+						
+						currentFailstack += 1;
+						objAdd(itemsProduced, componentType, -1);
+						
+						this.rank = Accessory.rankTo20(playerSettings['accessoryResetRank']);
+						objAdd(itemsProduced, `[${this.name} (${Accessory.rankToPen(this.rank)})]`, -1);
+						this.base = allItems[this.name]['base'][this.rank];
+						this.softcap = allItems[this.name]['softcap'][this.rank];
+						if(displayOnOff) $('#logs').prepend('<p style="color: brown">Restart: '+this.toString()+' bought</p>');
+						return "fail";
+					}
+				}
+				
+				purify() {
+					if(this.rank == 0) {
+						if(displayOnOff) $('#logs').prepend('<p style="color: pink">Already rank 0, nothing done</p>');
+						return;
+					}
+					if(displayOnOff) $('#logs').prepend('<p style="color: pink">'+this.toString()+' purified</p>');
+					objAdd(componentsUsed, 'purify', 1);
+					//objAdd(itemsProduced, this.toString(), -1);
+					this.rank -=1;
+					//objAdd(itemsProduced, this.toString(), 1);
+					this.base = allItems[this.name]['base'][this.rank];
+					this.softcap = allItems[this.name]['softcap'][this.rank];
+				}
+				
+				toString() {
+					return `[${this.name} (${this.rankToPen()})]`;
+				}
+				
+				toInfoString() {
+					return `[${this.name} (${this.rankToPen()})] Base: ${this.base} `;
+				}
+				
+				toDisplay() {
+					return `[${this.name} (${this.rankToPen()})]<br><br>
+					Success : ${Accessory.computeEnhanceProba(this.base, this.softcap, currentFailstack)}%`;
+				}
+			}
+			
+			function createItem(name, rankPen) {
+				if(allItems[name].type == 'accessory') return new Accessory(name, rankPen)
+				else return new Item(name, rankPen);
+			}
+			
+			function getType(name) {
+				return (allItems[name].type == 'accessory') ? 'accessory' : 'item';
+			}
+			
+			function getRankToPen(rank, type) {
+				return (type == 'accessory') ? Accessory.rankToPen(rank) : Item.rankToPen(rank);
+			}
+			
+			function getRankTo20(rank, type) {
+				return (type == 'accessory') ? Accessory.rankTo20(rank) : Item.rankTo20(rank);
+			}
+			
 			// Be careful, Table head is index 0
 			// Be also careful, for some reason nth-child seems to start at 1 for index 0 ...
-			function addStep(newStartStep, name, rank, index) {
+			function addStep(newStartStep, name, rankPen, index) {
 				let newStep = $($("#sampleStep :first-child").html());
-				if(rank == 21) rank = "PEN";
 				
 				if(index == undefined) index = $("#steps tr").length-1;
 				
@@ -1067,7 +1198,7 @@
 				
 				newStep.find("input").val(newStartStep);
 				newStep.find("select").first().find("option[value=\""+name+"\"]").prop("selected", true);
-				newStep.find("select").last().find("option[value=\""+rank+"\"]").prop("selected", true);
+				newStep.find("select").last().find("option[value=\""+rankPen+"\"]").prop("selected", true);
 				
 				$(`#steps tr:nth-child(${index})`).after(newStep);
 			}
@@ -1213,7 +1344,9 @@
 			
 			function savePlayerSettings() {
 				for (let [key, value] of Object.entries(playerSettings)) {
-					playerSettings[key] = Number($('#'+key+'PlayerSettingsInput').val());
+					let newValue = $('#'+key+'PlayerSettingsInput').val()
+					let formattedValue = (key == 'permanentFailstack') ? Number(newValue) : newValue;
+					playerSettings[key] = formattedValue;
 				}
 				updateSettings();
 			}
@@ -1271,84 +1404,9 @@
 				$("#displayOnOff").html(displayOnOff ? "All steps displayed (slow)" : "Only summaries displayed (fast)");
 			}
 			
-			/*
-			let myItem = new Item('Green Armor', Item.rankTo20("12"));
-			
-			console.log(myItem.base);
-			console.log(Item.computeEnhanceProba(myItem.base, 175));
-			console.log(myItem.toString());
-			console.log(myItem.toInfoString());
-			*/
 			
 			
 			
-			function reachFailstackReblath(targetStack){
-				//global: currentFailstack
-				
-				if(displayOnOff) $('#logs').prepend('<p>>>>ReachFailStack Reblath: Target='+targetStack+'</p>');
-				
-				myItem = new Item("Reblath", 14);
-				while(currentFailstack < targetStack) {
-					myItem.enhance()
-					if(myItem.rank == 15) {
-						myItem.purify();
-					}
-				}
-				
-				if(displayOnOff) $('#logs').prepend('<p>...FailStack Reblath reached: Target='+targetStack+'</p>');
-			}
-			
-			function reachFailstackGreenArmor(targetStack, choices) {
-				//global: currentFailstack
-				
-				let [startPri, startDuo, startTri, startTet] = choices;
-				
-				if(displayOnOff) $('#logs').prepend('<p>>>>ReachFailStack Green Armor: Target='+targetStack+' ['+choices+']</p>');
-				
-				myItem = new Item("Reblath", 14);
-				
-				while(currentFailstack < targetStack) {
-					if(currentFailstack < startPri) {
-						if(myItem.name == "Reblath" && myItem.rank == 15) {
-							myItem.purify();
-						} else if(myItem.name != "Reblath") {
-							myItem.sell();
-							myItem = new Item("Reblath", 14);
-						}
-						myItem.enhance();
-						
-					} else if(currentFailstack < startDuo) {
-						if(myItem.rank != Item.rankTo20("PRI")) {
-							myItem.sell();
-							myItem = new Item("Green Armor", "PRI");
-						}
-						myItem.enhance();
-						
-					} else if(currentFailstack < startTri) {
-						if(myItem.rank != Item.rankTo20("DUO")) {
-							myItem.sell();
-							myItem = new Item("Green Armor", "DUO");
-						}
-						myItem.enhance();
-						
-					} else if(currentFailstack < startTet) {
-						if(myItem.rank != Item.rankTo20("TRI")) {
-							myItem.sell();
-							myItem = new Item("Green Armor", "TRI");
-						}
-						myItem.enhance();
-						
-					} else {
-						if(myItem.rank != Item.rankTo20("TET")) {
-							myItem.sell();
-							myItem = new Item("Green Armor", "TET");
-						}
-						myItem.enhance();
-					}
-				}
-				
-				if(displayOnOff) $('#logs').prepend('<p>... FailStack Green Armor reached: Target='+targetStack+' ['+[startPri, startDuo, startTri, startTet]+']</p>');
-			}
 			
 			function runStrategy(stopCondition, arrayOfSteps) {
 				//global: currentFailstack
@@ -1360,13 +1418,13 @@
 					return;
 				}
 				
-				myItem = new Item(arrayOfSteps[0].name, Item.rankTo20(arrayOfSteps[0].rank));
+				myItem = createItem(arrayOfSteps[0].name, arrayOfSteps[0].rank);
 				while(true) {
 					if( (stopCondition.type == "reachFailstack" && currentFailstack >= stopCondition.targetStack)
 						|| (
 							stopCondition.type == "successOnLastStep"
 							&& myItem.name == arrayOfSteps[arrayOfSteps.length-1].name
-							&& myItem.rank == (Item.rankTo20(arrayOfSteps[arrayOfSteps.length-1].rank)+1)
+							&& myItem.rank == (getRankTo20(arrayOfSteps[arrayOfSteps.length-1].rank, myItem.type) + 1)
 						)
 					) {
 						myItem.sell();
@@ -1381,9 +1439,9 @@
 						
 						if(currentFailstack >= step.startStep) {
 							somethingHappened = true;
-							if(myItem.name != step.name || myItem.rank != Item.rankTo20(step.rank)) {
+							if(myItem.name != step.name || myItem.rank != getRankTo20(step.rank, myItem.type)) {
 								myItem.sell();
-								myItem = new Item(step.name, Item.rankTo20(step.rank));
+								myItem = createItem(step.name, step.rank);
 							}
 							myItem.enhance();
 							break;
@@ -1398,20 +1456,22 @@
 				if(displayOnOff) $('#logs').prepend('<p>... Strategy run completed: stopCondition='+JSON.stringify(stopCondition)+' steps='+JSON.stringify(arrayOfSteps)+'</p>');
 			}
 			
-			function runSingleItemStrategy(name, startRank, goalRank, arrayOfSteps) {
+			function runSingleItemStrategy(name, startRankPen, goalRankPen, arrayOfSteps) {
 				//global: currentFailstack
 				
-				if(displayOnOff) $('#logs').prepend('<p>>>>Run single item strategy: name='+name+' start='+startRank+' goal='+goalRank+' steps='+JSON.stringify(arrayOfSteps)+'</p>');
+				if(displayOnOff) $('#logs').prepend('<p>>>>Run single item strategy: name='+name+' start='+startRankPen+' goal='+goalRankPen+' steps='+JSON.stringify(arrayOfSteps)+'</p>');
 				
 				if(arrayOfSteps.length == 0) {
 					if(displayOnOff) $('#logs').prepend('<p style="color: red"><b>No step in the strategy. Run terminated</b></p>');
 					return;
 				}
 				
-				startRank = Item.rankTo20(startRank);
-				goalRank = Item.rankTo20(goalRank);
+				myItem = createItem(name, startRankPen);
 				
-				myItem = new Item(name, Item.rankTo20(startRank));
+				startRank = getRankTo20(startRankPen, myItem.type);
+				goalRank = getRankTo20(goalRankPen, myItem.type);
+				
+				
 				
 				while(true) {
 					if(myItem.rank == goalRank) {
@@ -1427,7 +1487,7 @@
 						naderr.push(currentFailstack);
 						naderr.sort(function(a, b){return a - b});
 						if(displayOnOff) $('#logs').prepend('<p style="color: rgb(75, 129, 232)">Store failstack of +'+currentFailstack+' in Naderr\'s belt '+JSON.stringify(naderr)+'</p>');
-						currentFailstack = playerSettings['defaultFailstack'];
+						currentFailstack = playerSettings['permanentFailstack'];
 					}
 					
 					if(currentFailstack < startStack) {
@@ -1450,7 +1510,7 @@
 					myItem.enhance();
 				}
 				
-				if(displayOnOff) $('#logs').prepend('<p>... Single item strategy run completed: name='+name+' start='+Item.rankToPen(startRank)+' goal='+Item.rankToPen(goalRank)+' steps='+JSON.stringify(arrayOfSteps)+'</p>');
+				if(displayOnOff) $('#logs').prepend('<p>... Single item strategy run completed: name='+name+' start='+startRankPen+' goal='+goalRankPen+' steps='+JSON.stringify(arrayOfSteps)+'</p>');
 			}
 			
 			//reachFailstackReblath(30);
@@ -1478,12 +1538,14 @@
 				
 				<br>TODO:<br>
 				- Optimise a strategy by finding the best FS level for each step.<br>
-				- Handle accessories<br>
 				- Compute the time spent clicking/going to the church/buying from the market/loading from the warehouse.<br>
 				- Enter the data for less common items like manos and ship equipment.<br>
 				
+				<br>v0.6: (23/05/2021)<br>
+				- Handles GBY accessories. No Manos and similar items yet.<br>
+				
 				<br>v0.5.1: (23/05/2021)<br>
-				- Ship green and blue gear added. Slight modification to allow either rank 5 or rank 15 switch to more expensive components/durability loss.<br>
+				- Ship green and blue gear added. Slight modification to allow the change in component and durability decrease at either rank 5 or 15.<br>
 				
 				<br>v0.5: (18/05/2021)<br>
 				- Single item strategy.<br>
@@ -1493,7 +1555,7 @@
 				
 				
 				<br>v0.3.1: (14/05/2021)<br>
-				- Handle the default failstack from the adventure log.<br>
+				- Handle the permanent failstack from the adventure log.<br>
 				- No infinite loop when no step is valid.<br>
 				- Button compute the price of concentrated black stones from materials.<br>
 				
