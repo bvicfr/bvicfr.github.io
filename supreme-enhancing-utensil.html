@@ -50,7 +50,7 @@
 		}
 	</style>
 	<body>
-		<h1 style='text-align: center; margin: 5px'>Supreme Enhancing Utensil <small>v0.6</small></h1>
+		<h1 style='text-align: center; margin: 5px'>Supreme Enhancing Utensil <small>v0.6.1</small></h1>
 		<h3 style='text-align: center; margin: 5px'><small>The enhancement simulator turning random clicking into data science</small></h3>
 		<div>
 			<div style='width: 32%; float: left; margin-right: 20px'>
@@ -359,7 +359,7 @@
 						<h3>Part 4: Define the single item enhancing strategy</h3>
 						
 						Load failstacks when necessary to enhance a single item increasing and decreasing in rank.<br>
-						If the failstack goes above the threshold of the next rank, it is stored in the Naderr's band.<br>
+						If the failstack goes above the threshold of the next rank, it is stored in the Naderr's band. ("failstackTolerance" is used when the threshold difference between two successive steps is too small)<br>
 						Failstacks in the Naderr's band are kept for following repetitions.<br><br>
 						I have no idea whether extra failstacks in the Naderr's band at the end of repetitions should be valued, currently they are worthless but still displayed so you can get an idea of the excess production of failstacks. There is also no way to force using excess failstacks on lower rank items.<br><br>
 						For accessories, if you want to start from rank 0, set Start at 15 (I'm too lazy to make an adapted display just for accessories)<br><br>
@@ -459,10 +459,10 @@
 							let singleStart =  $("#singleStart").val();
 							let singleGoal =  $("#singleGoal").val();
 							
-							if(getType(singleName) == "accessory") {
+							/*if(getType(singleName) == "accessory") {
 								playerSettings["accessoryResetRank"] = Accessory.rankToPen(Accessory.rankTo20(singleStart));
 								updateSettings();
-							}
+							}*/
 							
 							let arrayOfSteps = $.map($("#singleSteps input"), function(elem) {return $(elem).val()});
 							
@@ -884,6 +884,7 @@
 			
 			let playerSettings = {
 				'permanentFailstack': 1,
+				'failstackTolerance': 4,
 				'accessoryResetRank': 'PRI'
 			};
 			
@@ -1345,7 +1346,7 @@
 			function savePlayerSettings() {
 				for (let [key, value] of Object.entries(playerSettings)) {
 					let newValue = $('#'+key+'PlayerSettingsInput').val()
-					let formattedValue = (key == 'permanentFailstack') ? Number(newValue) : newValue;
+					let formattedValue = (key == 'permanentFailstack' || key == 'failstackTolerance') ? Number(newValue) : newValue;
 					playerSettings[key] = formattedValue;
 				}
 				updateSettings();
@@ -1474,6 +1475,7 @@
 				
 				
 				while(true) {
+					// If target reached, sell and exit
 					if(myItem.rank == goalRank) {
 						myItem.sell();
 						break;
@@ -1483,16 +1485,20 @@
 					let startStack = Number(arrayOfSteps[stepIndex]);
 					let nextStack = (myItem.rank+1 == goalRank) ? 99999 : Number(arrayOfSteps[stepIndex+1]);
 					
-					if(currentFailstack >= nextStack) {
+					// If excessive failstack, store in Naderr's band
+					// Excessive means "higher than next step (or start step + tolerance)"
+					if(currentFailstack >= Math.max(nextStack, startStack + playerSettings['failstackTolerance']) ) {
 						naderr.push(currentFailstack);
 						naderr.sort(function(a, b){return a - b});
 						if(displayOnOff) $('#logs').prepend('<p style="color: rgb(75, 129, 232)">Store failstack of +'+currentFailstack+' in Naderr\'s belt '+JSON.stringify(naderr)+'</p>');
 						currentFailstack = playerSettings['permanentFailstack'];
 					}
 					
+					// Try to find an appropriate FS in the Naderr's band
+					// Appropriate means "between step start and next step (or start step + tolerance)"
 					if(currentFailstack < startStack) {
 						for(let i=naderr.length-1; i>=0; i--) {
-							if(naderr[i] >= startStack && naderr[i] < nextStack) {
+							if(naderr[i] >= startStack && naderr[i] < Math.max(nextStack, startStack + playerSettings['failstackTolerance']) ) {
 								currentFailstack = naderr[i];
 								naderr.splice(i, 1); // remove i-th element
 								if(displayOnOff) $('#logs').prepend('<p style="color: rgb(75, 129, 232)">Retrieve failstack of +'+currentFailstack+' from Naderr\'s belt '+JSON.stringify(naderr)+'</p>');
@@ -1501,6 +1507,7 @@
 						}
 					}
 					
+					// Load a FS if necessary
 					if(currentFailstack < startStack) {
 						currentFailstack = startStack;
 						failstacksUsed[startStack] = (failstacksUsed[startStack] == undefined) ? 1 : failstacksUsed[startStack]+1;
@@ -1540,6 +1547,9 @@
 				- Optimise a strategy by finding the best FS level for each step.<br>
 				- Compute the time spent clicking/going to the church/buying from the market/loading from the warehouse.<br>
 				- Enter the data for less common items like manos and ship equipment.<br>
+				
+				<br>v0.6.1: (24/05/2021)<br>
+				- "failstackTolerance" added. It's useful for example to enhance an item from rank 0 to PRI and the failstack thresholds at each step are the same (or nearly the same).<br>
 				
 				<br>v0.6: (24/05/2021)<br>
 				- Handles GBY accessories. No Manos and similar items yet.<br>
